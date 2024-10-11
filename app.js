@@ -1,8 +1,15 @@
-
 const superagent = require('superagent').agent();
 const cheerio = require('cheerio');
+const express = require('express');
 //https://www.airservicesaustralia.com/naips/Account/LogOn
-const naips = async () => {
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
+async function getBriefingData() {
     let dashboard = await superagent
     .post('https://www.airservicesaustralia.com/naips/Account/LogOn')
     .send({ username: 'baenaips', password: '8209fta' })
@@ -33,7 +40,21 @@ const naips = async () => {
 
      // Extract the content inside the <pre> tag with class "briefing"
      const briefingData = $('pre.briefing').text();
-    console.log(briefingData);
+     //console.log(briefingData);
+     return briefingData;
 }
 
-naips();
+app.get('/', async (req, res) => {
+    try {
+        const briefingData = await getBriefingData(); // Fetch the data
+        console.log(briefingData);
+        res.render('index', { briefingData }); // Render the index.ejs file with data
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error fetching data');
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
