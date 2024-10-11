@@ -1,5 +1,6 @@
 
 const superagent = require('superagent').agent();
+const cheerio = require('cheerio');
 //https://www.airservicesaustralia.com/naips/Account/LogOn
 const naips = async () => {
     let dashboard = await superagent
@@ -27,8 +28,12 @@ const naips = async () => {
             Validity: '24'
     })
     .set('Content-Type', 'application/x-www-form-urlencoded');
+     // Load the HTML into cheerio
+     const $ = cheerio.load(areaBriefing.text);
 
-    console.log(areaBriefing.text);
+     // Extract the content inside the <pre> tag with class "briefing"
+     const briefingData = $('pre.briefing').text();
+    console.log(briefingData);
 }
 
 naips();
